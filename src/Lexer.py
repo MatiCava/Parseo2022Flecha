@@ -1,6 +1,6 @@
 from sly import Lexer
 
-class Flecha_Lexer(Lexer):
+class FlechaLexer(Lexer):
     # Set of token names preguntar si podemos usar MINUS para dos cosas distintas
     tokens = { 
                 LOWERID,
