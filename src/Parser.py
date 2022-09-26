@@ -1,6 +1,6 @@
 from sly import Parser
 from .lexer import Flecha_Lexer
-from .AST import ExprChar, ExprEmpty, ExprNumber, ExprVar
+from .AST import ExprChar, ExprEmpty, ExprNumber, ExprVar, ExprApply
 
 class Flecha_Parser(Parser):
     tokens = lexer.tokens
@@ -17,10 +17,6 @@ class Flecha_Parser(Parser):
     )
 
     @_('')
-    def empty(self, p):
-        return ExprEmpty()
-
-    @_('empty')
     def programa(self, p):
         return ExprEmpty()
     
@@ -106,7 +102,7 @@ class Flecha_Parser(Parser):
     @_('expresionInterna DIV expresionInterna')
     @_('expresionInterna MOD expresionInterna')
     def expresionInterna(self, p):
-        return
+        return ExprApply(ExprApply(ExprVar(p[1]), p[0]),  p[2])
 
     @_('NOT expresionInterna')
     @_('UMINUS expresionInterna')
@@ -119,7 +115,7 @@ class Flecha_Parser(Parser):
 
     @_('expresionAplicacion expresionAtomica')
     def expresionAplicacion(self, p):
-        return
+        return ExprApply(p[0], p[1])
 
     @_('LOWERID')
     def expresionAtomica(self, p):
