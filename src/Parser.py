@@ -1,10 +1,10 @@
 from sly import Parser
-from .lexer import FlechaLexer
-from .AST import ExprChar, ExprEmpty, ExprNumber, ExprVar, ExprApply, Programa, ExprDefinicion, DefParams,ExprConstructor, ExprIfThen, ExprCase,ExprLet
+from .Lexer import FlechaLexer
+from .AST import ExprChar, ExprEmpty, ExprNumber, ExprVar, ExprApply, Programa, Definition, Params,ExprConstructor, ExprIfThen, ExprCase,ExprLet,Expr,ExprLambda
 
 class FlechaParser(Parser):
     tokens = FlechaLexer.tokens
-
+    start = 'programa'
     precedence = (
         ('left', OR),
         ('left', AND),
@@ -17,6 +17,10 @@ class FlechaParser(Parser):
     )
 
     @_('')
+    def empty(self, p):
+        return ExprEmpty()
+
+    @_('')
     def programa(self, p):
         return ExprEmpty()
     
@@ -26,11 +30,11 @@ class FlechaParser(Parser):
 
     @_('DEF LOWERID parametros DEFEQ expresion')
     def definicion(self, p):
-        return ExprDefinicion(p.LOWERID, p.parametros, p.expresion)
+        return Definition(p.LOWERID, p.parametros, p.expresion)
 
     @_('LOWERID parametros')
     def parametros(self, p):
-        return DefParams(p.LOWERID, p.parametros)
+        return Params(p.LOWERID, p.parametros)
 
     @_('empty')
     def parametros(self, p):
@@ -38,15 +42,15 @@ class FlechaParser(Parser):
 
     @_('expresionExterna')
     def expresion(self, p):
-        return
+        return Expr(p.expresionExterna)
 
     @_('expresionExterna SEMICOLON expresion')
     def expresion(self, p):
-        return
+        return #FALTAAAAAA
 
     @_('expresionIf', 'expresionCase', 'expresionLet', 'expresionLambda', 'expresionInterna')
     def expresionExterna(self, p):
-        return 
+        return Expr(p[0])
 
     @_('IF expresionInterna THEN expresionInterna ramasElse')
     def expresionIf(self, p):
@@ -58,7 +62,7 @@ class FlechaParser(Parser):
 
     @_('ELSE expresionInterna')
     def ramasElse(self, p):
-        return
+        return Expr(p.expresionInterna)
 
     @_('CASE expresionInterna ramasCase')
     def expresionCase(self, p):
@@ -70,11 +74,11 @@ class FlechaParser(Parser):
 
     @_('ramaCase ramasCase')
     def ramasCase(self, p):
-        return
+        return #FALTAAAAAA
 
     @_('PIPE UPPERID parametros ARROW expresionInterna')
     def ramaCase(self, p):
-        return
+        return #FALTAAAAAA
 
     @_('LET LOWERID parametros DEFEQ expresionInterna IN expresionExterna')
     def expresionLet(self, p):
@@ -82,11 +86,11 @@ class FlechaParser(Parser):
 
     @_('LAMBDA parametros ARROW expresionExterna')
     def expresionLambda(self, p):
-        return
+        return ExprLambda(p.parametros, p.expresionExterna)
 
     @_('expresionAplicacion')
     def expresionInterna(self, p):
-        return
+        return Expr(p[0])
 
     @_('expresionInterna AND expresionInterna')
     @_('expresionInterna OR expresionInterna')
@@ -107,11 +111,11 @@ class FlechaParser(Parser):
     @_('NOT expresionInterna')
     @_('UMINUS expresionInterna')
     def expresionInterna(self, p):
-        return
+        return #FALTAAAAAA
 
     @_('expresionAtomica')
     def expresionAplicacion(self, p):
-        return
+        return Expr(p[0])
 
     @_('expresionAplicacion expresionAtomica')
     def expresionAplicacion(self, p):
@@ -135,8 +139,8 @@ class FlechaParser(Parser):
 
     @_('STRING')
     def expresionAtomica(self, p):
-        return
+        return #FALTAAAAAA
 
     @_('LPAREN expresion RPAREN')
     def expresionAtomica(self, p):
-        return
+        return #FALTAAAAAA
