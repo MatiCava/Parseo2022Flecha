@@ -41,7 +41,7 @@ class ExprChar:
     def __init__(self, value):
         self.value = value
     def toAST(self):
-        return ["ExprChar"] + [ord(self.value)]
+        return ["ExprChar"] + [parseListString(self.value)]
 
 ######################## ExprCase ######################
 class ExprCase:
@@ -50,6 +50,30 @@ class ExprCase:
         self.expr2 = expr2
     def toAST(self):
         return ['ExprCase', self.expr1.toAST(), self.expr2.toAST()]
+
+class ExprCases:
+    def __init__(self, caseBranch, caseBranches):
+        self.caseBranch = caseBranch
+        self.caseBranches = caseBranches
+    def toAST(self):
+        return [self.caseBranch.toAST(), self.caseBranches.toAST()]
+
+class ExprCaseBranch:
+    def __init__(self, id, params, expr):
+        self.id = id
+        self.params = Params(params)
+        self.expr = expr
+
+    def toAST(self):
+        return ['CaseBranch', self.id, self.params.toAST(), self.expr.toAST()]
+
+######################## ExprSemicolon ######################
+class ExprSemicolon:
+    def __init__(self, expr1, expr2):
+        self.expr1 = expr1
+        self.expr2 = expr2
+    def toAST(self):
+        return ['ExprLet', '_', self.expr1.toAST(), self.expr2.toAST()]
 
 ######################## ExprLet ######################
 class ExprLet:
@@ -111,9 +135,15 @@ class ExprString:
     def __init__(self, value):
         self.value = value
     def toAST(self):
-        #Debemos parsear el string como:
-        # "hola" -> Cons 'h' (Cons 'o' (Cons 'l' (Cons 'a' Nil)))
-        return
+        res = []
+        tail = ['ExprConstructor', 'Nil']
+        for ch in parseListString(self.value):
+            cons = ['ExprConstructor', 'Cons']
+            char = ['ExprChar', ch]
+            head = ['ExprApply', cons, char]
+            res = ['ExprApply', head, tail]
+        return res
+        
 class ExprIfThen:
     def __init__(self, condicion, ramaThen, ramaElse):
         self.condicion = condicion
@@ -124,3 +154,12 @@ class ExprIfThen:
         ramaElse = ["CaseBranch", "False", [], self.ramaElse.toAST()]
         return ['ExprCase', self.condicion.toAST(), [ramaThen, ramaElse]]
     
+def parseListString(str):
+    res = []
+    if len(str) > 1:
+        for ch in str:
+            resOrd = ord(ch)
+            res.append(resOrd)
+    else:
+        res.append(ord(str))
+    return res

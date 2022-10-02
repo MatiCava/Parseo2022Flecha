@@ -38,8 +38,8 @@ class FlechaLexer(Lexer):
                 MINUS,
                 DIV,
                 MOD,
-                TIMES,
-                UMINUS
+                TIMES
+                #UMINUS
             }
 
     # String containing ignored characters between tokens
@@ -73,7 +73,7 @@ class FlechaLexer(Lexer):
     LT      = r'<'
     PLUS    = r'\+'
     MINUS   = r'-'
-    UMINUS  = r'-'
+    #UMINUS  = r'-'
     DIV     = r'\/'
     MOD     = r'%'
     TIMES   = r'\*'

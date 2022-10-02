@@ -1,7 +1,7 @@
 from sys import argv
 from json import dumps
-from .Lexer import FlechaLexer
-from .Parser import FlechaParser
+from Lexer import FlechaLexer
+from Parser import FlechaParser
 
 if __name__ == '__main__':
 
@@ -18,8 +18,7 @@ if __name__ == '__main__':
         tokenized = lexer.tokenize(data)
         parsed = parser.parse(tokenized)
         ast = parsed.toAST()
-        print(ast)
         jsonResult = dumps(ast, indent=3)
-        print('jsonResult: ' + jsonResult)
+        print(jsonResult)
     except Exception as e:
         print(e)
