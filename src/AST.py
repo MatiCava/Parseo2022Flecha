@@ -135,14 +135,14 @@ class ExprString:
     def __init__(self, value):
         self.value = value
     def toAST(self):
-        res = []
-        tail = ['ExprConstructor', 'Nil']
-        for ch in parseListString(self.value):
+        tail = ['ExprConstructor', 'Nil'] 
+        for ch in reversed(parseListString(self.value)):
+            print(ch)
             cons = ['ExprConstructor', 'Cons']
             char = ['ExprChar', ch]
             head = ['ExprApply', cons, char]
-            res = ['ExprApply', head, tail]
-        return res
+            tail = ['ExprApply', head, tail]
+        return tail
         
 class ExprIfThen:
     def __init__(self, condicion, ramaThen, ramaElse):
@@ -156,10 +156,15 @@ class ExprIfThen:
     
 def parseListString(str):
     res = []
+    specialCh = ['"']
     if len(str) > 1:
         for ch in str:
-            resOrd = ord(ch)
-            res.append(resOrd)
+            print(f'\\{ch}')
+            print(ch)
+            if ch != '"':
+                resOrd = ord(ch)
+                res.append(resOrd)
     else:
         res.append(ord(str))
+    print(res)
     return res
