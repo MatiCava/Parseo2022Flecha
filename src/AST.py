@@ -41,7 +41,7 @@ class ExprChar:
     def __init__(self, value):
         self.value = value
     def toAST(self):
-        return ["ExprChar"] + [parseListString(self.value)]
+        return ["ExprChar"] + parseListString(self.value)
 
 ######################## ExprCase ######################
 class ExprCase:
@@ -52,11 +52,16 @@ class ExprCase:
         return ['ExprCase', self.expr1.toAST(), self.expr2.toAST()]
 
 class ExprCases:
-    def __init__(self, caseBranch, caseBranches):
+    def __init__(self, caseBranch= None, caseBranches= None):
         self.caseBranch = caseBranch
         self.caseBranches = caseBranches
     def toAST(self):
-        return [self.caseBranch.toAST(), self.caseBranches.toAST()]
+        res = []
+        if self.caseBranch:
+            res = [self.caseBranch.toAST()]
+        if self.caseBranches:
+            res += self.caseBranches.toAST()
+        return res
 
 class ExprCaseBranch:
     def __init__(self, id, params, expr):
@@ -65,7 +70,7 @@ class ExprCaseBranch:
         self.expr = expr
 
     def toAST(self):
-        return ['CaseBranch', self.id, self.params.toAST(), self.expr.toAST()]
+        return ["CaseBranch", self.id] + [self.params.toAST()] + [self.exp.toAST()]
 
 ######################## ExprSemicolon ######################
 class ExprSemicolon:
@@ -137,7 +142,6 @@ class ExprString:
     def toAST(self):
         tail = ['ExprConstructor', 'Nil'] 
         for ch in reversed(parseListString(self.value)):
-            print(ch)
             cons = ['ExprConstructor', 'Cons']
             char = ['ExprChar', ch]
             head = ['ExprApply', cons, char]
@@ -153,18 +157,34 @@ class ExprIfThen:
         ramaThen = ["CaseBranch", "True", [], self.ramaThen.toAST()]
         ramaElse = ["CaseBranch", "False", [], self.ramaElse.toAST()]
         return ['ExprCase', self.condicion.toAST(), [ramaThen, ramaElse]]
-    
+
+
+def caracterEspecial(char):
+    character = list(char)[1]
+    if character == "t":
+        parsed = 9
+    elif character == 'r':
+        parsed = 13
+    elif character == 'n':
+        parsed = 10
+    else:
+        parsed = ord(character)
+    return parsed
+
 def parseListString(str):
     res = []
-    specialCh = ['"']
-    if len(str) > 1:
-        for ch in str:
-            print(f'\\{ch}')
-            print(ch)
-            if ch != '"':
-                resOrd = ord(ch)
-                res.append(resOrd)
-    else:
+    if len(str) == 1:
         res.append(ord(str))
-    print(res)
+    else:
+        esComentario = False
+        listString = list(str)[1:-1]
+        for ch in listString:
+            if esComentario:
+                res.append(caracterEspecial(f'\\{ch}'))
+                esComentario = False
+            elif ch == '\\':
+                esComentario = True
+            else:
+                res.append(ord(ch))
+                esComentario = False
     return res

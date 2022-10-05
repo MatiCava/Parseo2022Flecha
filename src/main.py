@@ -1,7 +1,7 @@
 from sys import argv
 from json import dumps
-from Lexer import FlechaLexer
-from Parser import FlechaParser
+from .Lexer import FlechaLexer
+from .Parser import FlechaParser
 
 if __name__ == '__main__':
 

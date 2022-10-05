@@ -1,6 +1,6 @@
 from sly import Parser
-from Lexer import FlechaLexer
-from AST import ExprCaseBranch, ExprCases, ExprChar, ExprEmpty, ExprNumber, ExprSemicolon, ExprString, ExprVar, ExprApply, Programa, Definition, Params,ExprConstructor, ExprIfThen, ExprCase,ExprLet,Expr,ExprLambda
+from .Lexer import FlechaLexer
+from .AST import ExprCaseBranch, ExprCases, ExprChar, ExprEmpty, ExprNumber, ExprSemicolon, ExprString, ExprVar, ExprApply, Programa, Definition, Params,ExprConstructor, ExprIfThen, ExprCase,ExprLet,Expr,ExprLambda
 
 class FlechaParser(Parser):
     tokens = FlechaLexer.tokens
@@ -9,11 +9,11 @@ class FlechaParser(Parser):
         ('left', OR),
         ('left', AND),
         ('right', NOT),
-        ('left', EQ, NE, GE, LE, GT, LT),       
-        ('left', PLUS, MINUS),
-        ('left', TIMES),
+        ('left', EQ, NE, GE, LE, GT, LT),
+        ('left', ADD, SUB),
+        ('left', MUL),
         ('left', DIV, MOD),
-        #('right', UMINUS),
+        ('right', UMINUS),
     )
 
     @_('')
@@ -54,11 +54,11 @@ class FlechaParser(Parser):
 
     @_('IF expresionInterna THEN expresionInterna ramasElse')
     def expresionIf(self, p):
-        return ExprIfThen(p[1], p[3], p.ramasElse)
+        return ExprIfThen(p.expresionInterna, p.expresionExterna, p.ramasElse)
 
     @_('ELIF expresionInterna THEN expresionInterna ramasElse')
     def ramasElse(self, p):
-        return ExprIfThen(p[1], p[3], p.ramasElse)
+        return ExprIfThen(p.expresionInterna0, p.expresionInterna1, p.ramasElse)
 
     @_('ELSE expresionInterna')
     def ramasElse(self, p):
@@ -92,28 +92,30 @@ class FlechaParser(Parser):
     def expresionInterna(self, p):
         return Expr(p[0])
 
-    @_('expresionInterna AND expresionInterna')
+    @_('expresionInterna ADD expresionInterna')
+    @_('expresionInterna SUB expresionInterna')
+    @_('expresionInterna MUL expresionInterna')
+    @_('expresionInterna DIV expresionInterna')
+    @_('expresionInterna MOD expresionInterna')
     @_('expresionInterna OR expresionInterna')
+    @_('expresionInterna AND expresionInterna')
     @_('expresionInterna EQ expresionInterna')
     @_('expresionInterna NE expresionInterna')
     @_('expresionInterna GE expresionInterna')
     @_('expresionInterna LE expresionInterna')
     @_('expresionInterna GT expresionInterna')
     @_('expresionInterna LT expresionInterna')
-    @_('expresionInterna PLUS expresionInterna')
-    @_('expresionInterna MINUS expresionInterna')
-    @_('expresionInterna TIMES expresionInterna')
-    @_('expresionInterna DIV expresionInterna')
-    @_('expresionInterna MOD expresionInterna')
     def expresionInterna(self, p):
         return ExprApply(ExprApply(ExprVar(p[1]), p[0]),  p[2])
 
+    @_('SUB expresionInterna %prec UMINUS')
     @_('NOT expresionInterna')
-    @_('MINUS expresionInterna')
     def expresionInterna(self, p):
         actualOp = p[0]
         if p[0] == '-':
             actualOp = 'UMINUS'
+        elif p[0] == "!":
+            actualOp = "NOT"
         return ExprApply(ExprVar(actualOp), p.expresionInterna)
         
     @_('expresionAtomica')
@@ -122,7 +124,7 @@ class FlechaParser(Parser):
 
     @_('expresionAplicacion expresionAtomica')
     def expresionAplicacion(self, p):
-        return ExprApply(p[0], p[1])
+        return ExprApply(p.expresionAplicacion, p.expresionAtomica)
 
     @_('LOWERID')
     def expresionAtomica(self, p):
