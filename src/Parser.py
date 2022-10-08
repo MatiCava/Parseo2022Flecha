@@ -1,6 +1,6 @@
 from sly import Parser
-from .Lexer import FlechaLexer
-from .AST import ExprCaseBranch, ExprCases, ExprChar, ExprEmpty, ExprNumber, ExprSemicolon, ExprString, ExprVar, ExprApply, Programa, Definition, Params,ExprConstructor, ExprIfThen, ExprCase,ExprLet,Expr,ExprLambda
+from Lexer import FlechaLexer
+from AST import ExprCaseBranch, ExprCases, ExprChar, ExprEmpty, ExprNumber, ExprSemicolon, ExprString, ExprVar, ExprApply, Programa, Definition, Params,ExprConstructor, ExprIfThen, ExprCase,ExprLet,Expr,ExprLambda
 
 class FlechaParser(Parser):
     tokens = FlechaLexer.tokens
@@ -54,7 +54,7 @@ class FlechaParser(Parser):
 
     @_('IF expresionInterna THEN expresionInterna ramasElse')
     def expresionIf(self, p):
-        return ExprIfThen(p.expresionInterna, p.expresionExterna, p.ramasElse)
+        return ExprIfThen(p[1], p[3], p.ramasElse)
 
     @_('ELIF expresionInterna THEN expresionInterna ramasElse')
     def ramasElse(self, p):

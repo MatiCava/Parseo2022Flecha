@@ -1,3 +1,5 @@
+from Lexer import FlechaLexer
+
 ######################## Programa ###################### 
 class Programa:
     def __init__(self,programa,definicion):
@@ -20,7 +22,9 @@ class ExprVar:
     def __init__(self, id):
         self.id = id
     def toAST(self):
-        return ["ExprVar", self.id]
+        res = self.id
+        if res in FlechaLexer.mapTokens.keys(): res = FlechaLexer.mapTokens[self.id]
+        return ["ExprVar", res]
 
 ######################## ExprConstructor ######################
 class ExprConstructor:
@@ -66,11 +70,11 @@ class ExprCases:
 class ExprCaseBranch:
     def __init__(self, id, params, expr):
         self.id = id
-        self.params = Params(params)
+        self.params = Params(None, params)
         self.expr = expr
 
     def toAST(self):
-        return ["CaseBranch", self.id] + [self.params.toAST()] + [self.exp.toAST()]
+        return ["CaseBranch", self.id] + [self.params.toAST()] + [self.expr.toAST()]
 
 ######################## ExprSemicolon ######################
 class ExprSemicolon:

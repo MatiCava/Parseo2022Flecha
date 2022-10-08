@@ -40,6 +40,22 @@ class FlechaLexer(Lexer):
         LT,
     }
 
+    mapTokens = {
+        '/' : DIV,
+        '*' : MUL,
+        '+' : ADD,
+        '-' : SUB,
+        '%' : MOD,
+        '||' : OR,
+        '&&' : AND,
+        '==' : EQ,
+        '!=' : NE,
+        '>=' : GE,
+        '<=' : LE,
+        '>' : GT,
+        '<' : LT,
+    }
+
     # Ignored pattern
     ignore_whitespaces = '\s'
     ignore_tabs = '\t+'
