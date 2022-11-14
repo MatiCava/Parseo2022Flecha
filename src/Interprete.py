@@ -32,6 +32,7 @@ class FlechaInterprete():
         expr = ast[0]
         print(ast)
         print(expr)
+        #esta bien solo guardar global con def?
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -42,21 +43,35 @@ class FlechaInterprete():
             return self.evaluarChar(ast[1])
         elif expr == 'ExprNumber':
             return self.evaluarNum(ast[1])
+        elif expr == 'ExprLet':
+            return self.evaluarLet(ast[1], ast[2], ast[3])
 
-#aca em apply deberia guardar nueva variable o en evaluar var o solo guardar incognito con un let?
     def evaluarApply(self, expr1, expr2):
         if expr1[0] == 'ExprVar':
             if 'unsafePrint' in expr1[1]:
-                return self.evaluarExpr(expr2)
-        #idea de extender env cuando guardamos    
-        #self._envL = EntornoExtendido(self._envL, self.evaluarVar(expr1[1]), self.evaluarExpr(expr2))
+                res = self.evaluarExpr(expr2)
+                print('RESULT UNSAFE PRINT')
+                print(res)
+                return res
+        if expr1[0] == 'ExprLambda':
+            #pisamos locales? o como se maneja?
+            self._envL = EntornoExtendido(self._envL, expr1[1], self.evaluarExpr(expr2))
 
-#que deberia hacer buscar y si no esta guardar? donde terminamos imprimiendo
     def evaluarVar(self, expr):
         try:
             return self._envL.lookup(expr)
         except:
             return self._envG[expr]
+
+#prguntar test 5 resultado de main queda salto de linea solo y en local queda hola mundo
+    def evaluarLet(self, var, val, aplicacion):
+        try:
+            #pisamos locales? o como se maneja?
+            valLocal = self._envL.lookup(var)
+            self._envL = EntornoExtendido(self._envL, var, valLocal + self.evaluarExpr(val))
+        except:
+            self._envL = EntornoExtendido(self._envL, var, self.evaluarExpr(val))
+        return self.evaluarExpr(aplicacion)      
 
     def evaluarChar(self, val):
         return chr(val)
