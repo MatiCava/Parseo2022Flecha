@@ -30,6 +30,8 @@ class FlechaInterprete():
             
     def evaluarExpr(self, ast):
         expr = ast[0]
+        print(ast)
+        print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluar(ast[2])
         elif expr == 'ExprApply':
@@ -43,7 +45,7 @@ class FlechaInterprete():
     def evaluarApply(self, expr1, expr2):
         if expr1[0] == 'ExprVar':
             self._envL = EntornoExtendido(self._envL, self.evaluarVar(expr1[1]), self.evaluarExpr(expr2))
-#que deberia hacer
+#que deberia hacer buscar y si no esta guardar? donde terminamos imprimiendo
     def evaluarVar(self, expr, expr2):
         testPrint
         try:

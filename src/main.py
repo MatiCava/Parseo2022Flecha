@@ -20,7 +20,7 @@ if __name__ == '__main__':
         parsed = parser.parse(tokenized)
         ast = parsed.toAST()
         inter = FlechaInterprete({}, EntornoVacio())
-        inter.evaluar(ast)
+        inter.evaluar(ast[0])
         ##jsonResult = dumps(ast, indent=3)
         ##dirResult = ".\\test_results\\" + os.path.basename(inputFile).split('.')[0] + '.result'
         ##with open(dirResult, 'w') as f:
