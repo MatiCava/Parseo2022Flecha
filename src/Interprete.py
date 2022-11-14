@@ -33,28 +33,33 @@ class FlechaInterprete():
         print(ast)
         print(expr)
         if expr == 'Def':
-            self._envG[ast[1]] = self.evaluar(ast[2])
+            self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
-            self.evaluarApply(ast[1], ast[2])
+            return self.evaluarApply(ast[1], ast[2])
         elif expr == 'ExprVar':
-            self.evaluarVar(ast[1])
+            return self.evaluarVar(ast[1])
         elif expr == 'ExprChar':
-            self.evaluarChar(ast[1])
+            return self.evaluarChar(ast[1])
+        elif expr == 'ExprNumber':
+            return self.evaluarNum(ast[1])
 
-#aca em apply deberia guardar nueva variable o en evaluar var?
+#aca em apply deberia guardar nueva variable o en evaluar var o solo guardar incognito con un let?
     def evaluarApply(self, expr1, expr2):
         if expr1[0] == 'ExprVar':
-            self._envL = EntornoExtendido(self._envL, self.evaluarVar(expr1[1]), self.evaluarExpr(expr2))
-#que deberia hacer buscar y si no esta guardar? donde terminamos imprimiendo
-    def evaluarVar(self, expr, expr2):
-        testPrint
-        try:
-            testPrint = self._envL.lookup(expr)
-        except:
-            testPrint = self._envG[expr]
+            if 'unsafePrint' in expr1[1]:
+                return self.evaluarExpr(expr2)
+        #idea de extender env cuando guardamos    
+        #self._envL = EntornoExtendido(self._envL, self.evaluarVar(expr1[1]), self.evaluarExpr(expr2))
 
-        if 'unsafePrint' in expr:
-            print(testPrint)
+#que deberia hacer buscar y si no esta guardar? donde terminamos imprimiendo
+    def evaluarVar(self, expr):
+        try:
+            return self._envL.lookup(expr)
+        except:
+            return self._envG[expr]
 
     def evaluarChar(self, val):
         return chr(val)
+    
+    def evaluarNum(self, val):
+        return val

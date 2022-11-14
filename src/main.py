@@ -19,8 +19,12 @@ if __name__ == '__main__':
         tokenized = lexer.tokenize(data)
         parsed = parser.parse(tokenized)
         ast = parsed.toAST()
+        print(ast)
         inter = FlechaInterprete({}, EntornoVacio())
-        inter.evaluar(ast[0])
+        for rama in ast:
+            inter.evaluar(rama)
+        print(inter._envG)
+        print(inter._envG['main'])
         ##jsonResult = dumps(ast, indent=3)
         ##dirResult = ".\\test_results\\" + os.path.basename(inputFile).split('.')[0] + '.result'
         ##with open(dirResult, 'w') as f:
