@@ -1,3 +1,6 @@
+import sys
+
+
 class EntornoVacio():
     def __init__(self):
         pass
@@ -17,6 +20,12 @@ class EntornoExtendido():
             return self._val
         else:
             return self._env.lookup(var)
+
+class Clausura():
+    def __init__(self, var, cuerpo, env):
+        self._var = var
+        self._cuerpo = cuerpo
+        self._env = env
 
 class FlechaInterprete():
     def __init__(self, envG, envL):
@@ -49,18 +58,26 @@ class FlechaInterprete():
         elif expr == 'ExprLet':
             return self.evaluarLet(ast[1], ast[2], ast[3])
         elif expr == 'ExprLambda':
-            return self.evaluarLamb(ast[1], ast[2])
+            return Clausura(ast[1], ast[2], self._envL)
 #con unsafe print es imprimir en el momento o es guardar resultado e imprimir al final, porque test hola mundo depende de esto
 #y test que pisa x e imprime 42 44 42 tambien dependen
     def evaluarApply(self, expr1, expr2):
         if expr1[0] == 'ExprVar':
-            if 'unsafePrint' in expr1[1]:
+            if 'unsafePrintInt' in expr1[1]:
                 res = self.evaluarExpr(expr2)
-                print('RESULT UNSAFE PRINT')
+                print('RESULT UNSAFE PRINT INT')
                 print(res)
+                return res
+            if 'unsafePrintChar' in expr1[1]:
+                res = self.evaluarExpr(expr2)
+                print('RESULT UNSAFE PRINT CHAR')
+                sys.stdout.write(res)
                 return res
         if expr1[0] == 'ExprLambda':
             return self.evaluarLamb(expr1, expr2)
+        if expr1[0] == 'ExprApply':
+            pass
+            #self.evaluarExpr(expr1)
 
     def evaluarVar(self, expr):
         try:
@@ -68,21 +85,14 @@ class FlechaInterprete():
         except:
             return self._envG[expr]
 
-#prguntar test 5 resultado de main queda salto de linea solo y en local queda hola mundo
     def evaluarLet(self, var, val, aplicacion):
-        try:
-            #pisamos locales? o como se maneja? en caso 07 se nos esta sumando creo y para strings como el 05 si el print
-            #tenemos que juntar resultado todo en env y despues imprimir si tendriamos que concatenar
-            #de una forma similar como ahora
-            #valLocal = self._envL.lookup(var)
-            #self._envL = EntornoExtendido(self._envL, var, valLocal + self.evaluarExpr(val))
-            self._envL = EntornoExtendido(self._envL, var, self.evaluarExpr(val))
-        except:
-            self._envL = EntornoExtendido(self._envL, var, self.evaluarExpr(val))
-        return self.evaluarExpr(aplicacion)      
+        oldL = self._envL
+        self._envL = EntornoExtendido(self._envL, var, self.evaluarExpr(val))
+        res = self.evaluarExpr(aplicacion)
+        self._envL = oldL
+        return res
 
     def evaluarLamb(self, expr1, expr2):
-        #pisamos locales? o como se maneja?
         self._envL = EntornoExtendido(self._envL, expr1[1], self.evaluarExpr(expr2))
         return self.evaluarExpr(expr1[2])
 
