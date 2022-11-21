@@ -1,3 +1,4 @@
+import copy
 import sys
 
 
@@ -7,7 +8,6 @@ class EntornoVacio():
 
     def lookup(self, var):
         raise Exception("Variable no esta ligada")
-        #print("Variable no esta ligada")
 
 class EntornoExtendido():
     def __init__(self, env, var, val):
@@ -58,11 +58,10 @@ class FlechaInterprete():
         elif expr == 'ExprLet':
             return self.evaluarLet(ast[1], ast[2], ast[3])
         elif expr == 'ExprLambda':
-            return Clausura(ast[1], ast[2], self._envL)
-#con unsafe print es imprimir en el momento o es guardar resultado e imprimir al final, porque test hola mundo depende de esto
-#y test que pisa x e imprime 42 44 42 tambien dependen
+            return Clausura(ast[1], ast[2], copy.deepcopy(self._envL))
+
     def evaluarApply(self, expr1, expr2):
-        if expr1[0] == 'ExprVar':
+        if expr1[0] == 'ExprVar' and ('unsafePrintInt' in expr1[1] or 'unsafePrintChar' in expr1[1]):
             if 'unsafePrintInt' in expr1[1]:
                 res = self.evaluarExpr(expr2)
                 print('RESULT UNSAFE PRINT INT')
@@ -73,11 +72,13 @@ class FlechaInterprete():
                 print('RESULT UNSAFE PRINT CHAR')
                 sys.stdout.write(res)
                 return res
-        if expr1[0] == 'ExprLambda':
-            return self.evaluarLamb(expr1, expr2)
-        if expr1[0] == 'ExprApply':
-            pass
-            #self.evaluarExpr(expr1)
+        else:
+            res1 = self.evaluarExpr(expr1)
+            res2 = self.evaluarExpr(expr2)
+            if isinstance(res1, Clausura):
+                self._envL = EntornoExtendido(self._envL, res1._var, res2)
+                resFinal = self.evaluarExpr(res1._cuerpo)
+                return resFinal
 
     def evaluarVar(self, expr):
         try:
