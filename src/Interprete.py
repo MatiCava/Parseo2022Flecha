@@ -42,9 +42,6 @@ class FlechaInterprete():
         expr = ast[0]
         print(ast)
         print(expr)
-        #esta bien solo guardar global con def?
-        #en test 10 quedamos con una definicion en glob de x 42
-        #mientras que en local estamos definiedo una x con 43
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -70,15 +67,15 @@ class FlechaInterprete():
             if 'unsafePrintChar' in expr1[1]:
                 res = self.evaluarExpr(expr2)
                 print('RESULT UNSAFE PRINT CHAR')
-                sys.stdout.write(res)
+                #sys.stdout.write(res)
+                print(res)
                 return res
         else:
             res1 = self.evaluarExpr(expr1)
             res2 = self.evaluarExpr(expr2)
             if isinstance(res1, Clausura):
-                self._envL = EntornoExtendido(self._envL, res1._var, res2)
-                resFinal = self.evaluarExpr(res1._cuerpo)
-                return resFinal
+                self._envL = EntornoExtendido(res1._env, res1._var, res2)
+                return self.evaluarExpr(res1._cuerpo)
 
     def evaluarVar(self, expr):
         try:
