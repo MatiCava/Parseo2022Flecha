@@ -40,8 +40,8 @@ class FlechaInterprete():
             
     def evaluarExpr(self, ast):
         expr = ast[0]
-        print(ast)
-        print(expr)
+        #print(ast)
+        #print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -74,8 +74,11 @@ class FlechaInterprete():
             res1 = self.evaluarExpr(expr1)
             res2 = self.evaluarExpr(expr2)
             if isinstance(res1, Clausura):
+                oldL = self._envL
                 self._envL = EntornoExtendido(res1._env, res1._var, res2)
-                return self.evaluarExpr(res1._cuerpo)
+                resFinal = self.evaluarExpr(res1._cuerpo)
+                self._envL = oldL
+                return resFinal
 
     def evaluarVar(self, expr):
         try:
