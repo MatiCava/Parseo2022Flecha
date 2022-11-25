@@ -21,6 +21,10 @@ class EntornoExtendido():
         else:
             return self._env.lookup(var)
 
+class Constructor():
+    def __init__(self, val):
+        self._val = val
+
 class Clausura():
     def __init__(self, var, cuerpo, env):
         self._var = var
@@ -40,8 +44,8 @@ class FlechaInterprete():
             
     def evaluarExpr(self, ast):
         expr = ast[0]
-        #print(ast)
-        #print(expr)
+        print(ast)
+        print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -52,10 +56,14 @@ class FlechaInterprete():
             return self.evaluarChar(ast[1])
         elif expr == 'ExprNumber':
             return self.evaluarNum(ast[1])
+        elif expr == 'ExprConstructor':
+            return Constructor(ast[1])
         elif expr == 'ExprLet':
             return self.evaluarLet(ast[1], ast[2], ast[3])
         elif expr == 'ExprLambda':
             return Clausura(ast[1], ast[2], copy.deepcopy(self._envL))
+        elif expr == 'ExprCase':
+            return self.evaluarCase(ast[1], ast[2])
 
     def evaluarApply(self, expr1, expr2):
         if expr1[0] == 'ExprVar' and ('unsafePrintInt' in expr1[1] or 'unsafePrintChar' in expr1[1]):
@@ -80,6 +88,22 @@ class FlechaInterprete():
                 self._envL = oldL
                 return resFinal
 
+    def evaluarCase(self, constr, branches):
+        print('CONSTR CASE')
+        print(constr)
+        resConstr = self.evaluarExpr(constr)
+        for branch in branches:
+            print('BRANCH AAA')
+            print(branch)
+            print(resConstr)
+            print('TYPE')
+            print(type(resConstr) is branch[1])
+            if isinstance(resConstr, Constructor) and resConstr._val == branch[1]:
+                return self.evaluarExpr(branch[3])
+            if type(resConstr) is branch[1]: #revisar no hace falta ver que sea el mismo numero que la guarda?
+                return self.evaluarExpr(branch[3])
+            #falta caso de que sea una estructura
+
     def evaluarVar(self, expr):
         try:
             return self._envL.lookup(expr)
@@ -92,11 +116,7 @@ class FlechaInterprete():
         res = self.evaluarExpr(aplicacion)
         self._envL = oldL
         return res
-
-    def evaluarLamb(self, expr1, expr2):
-        self._envL = EntornoExtendido(self._envL, expr1[1], self.evaluarExpr(expr2))
-        return self.evaluarExpr(expr1[2])
-
+    
     def evaluarChar(self, val):
         return chr(val)
     
