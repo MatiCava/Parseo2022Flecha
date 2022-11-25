@@ -32,6 +32,14 @@ class Clausura():
         self._env = env
 
 class FlechaInterprete():
+
+    mapTypes = {
+        'int' : int,
+        'char' : str,
+        'string' : str,
+        'closure' : Clausura,
+    }
+
     def __init__(self, envG, envL):
         self._envG = envG
         self._envL = envL
@@ -44,8 +52,8 @@ class FlechaInterprete():
             
     def evaluarExpr(self, ast):
         expr = ast[0]
-        print(ast)
-        print(expr)
+        #print(ast)
+        #print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -89,18 +97,11 @@ class FlechaInterprete():
                 return resFinal
 
     def evaluarCase(self, constr, branches):
-        print('CONSTR CASE')
-        print(constr)
         resConstr = self.evaluarExpr(constr)
         for branch in branches:
-            print('BRANCH AAA')
-            print(branch)
-            print(resConstr)
-            print('TYPE')
-            print(type(resConstr) is branch[1])
             if isinstance(resConstr, Constructor) and resConstr._val == branch[1]:
                 return self.evaluarExpr(branch[3])
-            if type(resConstr) is branch[1]: #revisar no hace falta ver que sea el mismo numero que la guarda?
+            if str.lower(branch[1]) in self.mapTypes.keys() and type(resConstr) is self.mapTypes[str.lower(branch[1])]: #revisar no hace falta ver que sea el mismo numero que la guarda?
                 return self.evaluarExpr(branch[3])
             #falta caso de que sea una estructura
 
