@@ -21,6 +21,16 @@ class EntornoExtendido():
         else:
             return self._env.lookup(var)
 
+class Lista():
+
+    def __init__(self):
+        self._type = 'Nil'
+
+    def setCons(self, head, tail):
+        self._type = 'Cons'
+        self._head = head
+        self._tail = tail
+        
 class Constructor():
     def __init__(self, val):
         self._val = val
@@ -52,8 +62,8 @@ class FlechaInterprete():
             
     def evaluarExpr(self, ast):
         expr = ast[0]
-        #print(ast)
-        #print(expr)
+        print(ast)
+        print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -65,13 +75,19 @@ class FlechaInterprete():
         elif expr == 'ExprNumber':
             return self.evaluarNum(ast[1])
         elif expr == 'ExprConstructor':
-            return Constructor(ast[1])
+            return self.evaluarConstructor(ast[1])
         elif expr == 'ExprLet':
             return self.evaluarLet(ast[1], ast[2], ast[3])
         elif expr == 'ExprLambda':
             return Clausura(ast[1], ast[2], copy.deepcopy(self._envL))
         elif expr == 'ExprCase':
             return self.evaluarCase(ast[1], ast[2])
+
+    def evaluarConstructor(self, expr1):
+        if 'Cons' in expr1 or 'Nil' in expr1:
+            return Lista()
+        else:
+            return Constructor(expr1)
 
     def evaluarApply(self, expr1, expr2):
         if expr1[0] == 'ExprVar' and ('unsafePrintInt' in expr1[1] or 'unsafePrintChar' in expr1[1]):
@@ -89,21 +105,34 @@ class FlechaInterprete():
         else:
             res1 = self.evaluarExpr(expr1)
             res2 = self.evaluarExpr(expr2)
+            print(isinstance(res1, Lista))
             if isinstance(res1, Clausura):
                 oldL = self._envL
                 self._envL = EntornoExtendido(res1._env, res1._var, res2)
                 resFinal = self.evaluarExpr(res1._cuerpo)
                 self._envL = oldL
                 return resFinal
+            if isinstance(res1, Lista):
+                newList = Lista()
+                newList.setCons(res2, res1)
+                return newList
 
     def evaluarCase(self, constr, branches):
+        print('CASE PARA HACER')
+        print(constr)
         resConstr = self.evaluarExpr(constr)
+        print(resConstr)
+        print(type(resConstr))
         for branch in branches:
+            print('BRANCH')
+            print(branch)
             if isinstance(resConstr, Constructor) and resConstr._val == branch[1]:
+                return self.evaluarExpr(branch[3])
+            if isinstance(resConstr, Lista) and resConstr._type == branch[1]:
+                #aca entra a la lista pero viene en el resConstr como esta armada y la variable de la branch no esta ligada ni nada
                 return self.evaluarExpr(branch[3])
             if str.lower(branch[1]) in self.mapTypes.keys() and type(resConstr) is self.mapTypes[str.lower(branch[1])]: #revisar no hace falta ver que sea el mismo numero que la guarda?
                 return self.evaluarExpr(branch[3])
-            #falta caso de que sea una estructura
 
     def evaluarVar(self, expr):
         try:
