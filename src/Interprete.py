@@ -24,13 +24,8 @@ class EntornoExtendido():
 class Lista():
 
     def __init__(self):
-        self._type = 'Nil'
+        self._list = []
 
-    def setCons(self, head, tail):
-        self._type = 'Cons'
-        self._head = head
-        self._tail = tail
-        
 class Constructor():
     def __init__(self, val):
         self._val = val
@@ -105,7 +100,6 @@ class FlechaInterprete():
         else:
             res1 = self.evaluarExpr(expr1)
             res2 = self.evaluarExpr(expr2)
-            print(isinstance(res1, Lista))
             if isinstance(res1, Clausura):
                 oldL = self._envL
                 self._envL = EntornoExtendido(res1._env, res1._var, res2)
@@ -113,9 +107,18 @@ class FlechaInterprete():
                 self._envL = oldL
                 return resFinal
             if isinstance(res1, Lista):
-                newList = Lista()
-                newList.setCons(res2, res1)
-                return newList
+                print('LISTAAA')
+                print(res1)
+                print(res2)
+                if isinstance(res2, Lista):
+                    print('RES 2 ES LISTA')
+                    print(res2._list)
+                    res1._list.extend(res2._list)
+                else:    
+                    res1._list.append(res2)
+                print('RESULTADO RES1 LIST')
+                print(res1._list)
+                return res1
 
     def evaluarCase(self, constr, branches):
         print('CASE PARA HACER')
@@ -123,14 +126,28 @@ class FlechaInterprete():
         resConstr = self.evaluarExpr(constr)
         print(resConstr)
         print(type(resConstr))
+        if isinstance(resConstr, Lista):
+            print('rescontr lista')
+            print(resConstr._list)
         for branch in branches:
             print('BRANCH')
             print(branch)
             if isinstance(resConstr, Constructor) and resConstr._val == branch[1]:
                 return self.evaluarExpr(branch[3])
-            if isinstance(resConstr, Lista) and resConstr._type == branch[1]:
+            if isinstance(resConstr, Lista) and ('Cons' in branch[1] or 'Nil' in branch[1]):
                 #aca entra a la lista pero viene en el resConstr como esta armada y la variable de la branch no esta ligada ni nada
-                return self.evaluarExpr(branch[3])
+                if('Cons' in branch[1]):
+                    oldL = self._envL
+                    #newList = Lista()
+                    #newList._list.append(resConstr._list.pop(0))
+                    self._envL = EntornoExtendido(self._envL, branch[2][0], resConstr._list.pop(0))
+                    self._envL = EntornoExtendido(self._envL, branch[2][1], resConstr._list)
+                    resultCase = self.evaluarExpr(branch[3])
+                    self._envL = oldL
+                    return resultCase
+                else:
+                    return self.evaluarExpr(branch[3])
+
             if str.lower(branch[1]) in self.mapTypes.keys() and type(resConstr) is self.mapTypes[str.lower(branch[1])]: #revisar no hace falta ver que sea el mismo numero que la guarda?
                 return self.evaluarExpr(branch[3])
 
