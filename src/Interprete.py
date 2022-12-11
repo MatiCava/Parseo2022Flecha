@@ -1,4 +1,5 @@
 import copy
+import json
 import sys
 
 
@@ -57,8 +58,8 @@ class FlechaInterprete():
             
     def evaluarExpr(self, ast):
         expr = ast[0]
-        print(ast)
-        print(expr)
+        #print(ast)
+        #print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -107,56 +108,65 @@ class FlechaInterprete():
                 self._envL = oldL
                 return resFinal
             if isinstance(res1, Lista):
-                print('LISTAAA')
-                print(res1)
-                print(res2)
+             #   print('LISTAAA')
+            #    print(res1)
+           #     print(res2)
                 if isinstance(res2, Lista):
-                    print('RES 2 ES LISTA')
-                    print(res2._list)
+          #          print('RES 2 ES LISTA')
+         #           print(res2._list)
                     res1._list.extend(res2._list)
                 else:    
                     res1._list.append(res2)
-                print('RESULTADO RES1 LIST')
-                print(res1._list)
+        #        print('RESULTADO RES1 LIST')
+       #         print(res1._list)
                 return res1
 
     def evaluarCase(self, constr, branches):
-        print('CASE PARA HACER')
-        print(constr)
+        #print('CASE PARA HACER')
+        #print(constr)
         resConstr = self.evaluarExpr(constr)
-        print(resConstr)
-        print(type(resConstr))
-        if isinstance(resConstr, Lista):
-            print('rescontr lista')
-            print(resConstr._list)
+        #print(resConstr)
+        #print(type(resConstr))
+        #if isinstance(resConstr, Lista):
+            #print('rescontr lista')
+            #print(resConstr._list)
         for branch in branches:
-            print('BRANCH')
-            print(branch)
-            print('BRANCH CONDICION CONS')
-            print(isinstance(resConstr, Lista))
-            print('Cons' in branch[1])
-            if isinstance(resConstr, Lista):
-                print(len(resConstr._list) > 0)
-            print(isinstance(resConstr, Lista) and 'Cons' in branch[1] and len(resConstr._list) > 0)
-            print('BRANCH CONDICION NIL')
-            print(isinstance(resConstr, Lista) and 'Nil' in branch[1] and len(resConstr._list) == 0)
+            #print('BRANCH')
+            #print(branch)
+            #print('BRANCH CONDICION CONS')
+            #print(isinstance(resConstr, Lista))
+            #print('Cons' in branch[1])
+            #if isinstance(resConstr, Lista):
+             #   print(len(resConstr._list) > 0)
+            #print(isinstance(resConstr, Lista) and 'Cons' in branch[1] and len(resConstr._list) > 0)
+            #print('BRANCH CONDICION NIL')
+            #print(isinstance(resConstr, Lista) and 'Nil' in branch[1] and len(resConstr._list) == 0)
             if isinstance(resConstr, Constructor) and resConstr._val == branch[1]:
                 return self.evaluarExpr(branch[3])
             if isinstance(resConstr, Lista) and 'Cons' in branch[1] and len(resConstr._list) > 0:
-                oldL = self._envL
-                print('bind x')
-                print(branch[2][0])
-                print(resConstr._list[0])
-                self._envL = EntornoExtendido(self._envL, branch[2][0], resConstr._list.pop(0))
-                newList = Lista()
-                newList._list = resConstr._list
-                print('bind xs')
-                print(branch[2][1])
-                print(newList._list)
-                self._envL = EntornoExtendido(self._envL, branch[2][1], newList)
-
-                resultCase = self.evaluarExpr(branch[3])
-                self._envL = oldL
+                test = json.dumps(branch[3])
+                if ('ExprVar' in test and 'x' in test) or ('ExprVar' in test and 'xs' in test): 
+                    oldL = self._envL
+                    #print('bind x')
+                    #print(branch[2][0])
+                    #print(resConstr._list[0])
+                    self._envL = EntornoExtendido(self._envL, branch[2][0], resConstr._list.pop(0))
+                    newList = Lista()
+                    newList._list = copy.deepcopy(resConstr._list)
+                   # print('bind xs')
+                    #print(branch[2][1])
+                    #print(newList._list)
+                    self._envL = EntornoExtendido(self._envL, branch[2][1], newList)
+                    #print('BRANCH 3')
+                    #print(branch[3])
+                    resultCase = self.evaluarExpr(branch[3])
+                    #print('BRANCH 3 RESUL')
+                    #print(resultCase)
+                    #if isinstance(resultCase, Constructor):
+                    #    print(resultCase._val)
+                    self._envL = oldL
+                else:
+                    resultCase = self.evaluarExpr(branch[3])
                 return resultCase
 
             if isinstance(resConstr, Lista) and 'Nil' in branch[1] and len(resConstr._list) == 0:
