@@ -32,7 +32,9 @@ if __name__ == '__main__':
             'ADD': 'ADD',
             'SUB': 'SUB',
             'MUL': 'MUL',
-            'DIV': 'DIV'
+            'DIV': 'DIV',
+            'MOD': 'MOD',
+            'UMINUS': 'UMINUS'
         }
         inter = FlechaInterprete(envGlobal, EntornoVacio())
         for rama in ast:

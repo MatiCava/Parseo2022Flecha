@@ -66,7 +66,9 @@ class FlechaInterprete():
         'ADD' : operator.add,
         'SUB': operator.sub,
         'MUL': operator.mul,
-        'DIV': operator.floordiv
+        'DIV': operator.floordiv,
+        'MOD': operator.mod,
+        'UMINUS': operator.neg
     }
 
     listOpLogicos = ['LT', 'LE', 'GT', 'GE', 'NE', 'EQ']
@@ -147,7 +149,7 @@ class FlechaInterprete():
                     valOp._values.append(res2)    
                 if (res1 == 'OR' and res2._val == 'True') or (res1 == 'AND' and res2._val == 'False') or (res1 == 'NOT'):
                     valOp._skip = True
-                if res1 == 'NOT':
+                if res1 == 'NOT' or res1 == 'UMINUS':
                     return self.evaluarOp(valOp, None)
                 else:
                     return valOp
@@ -172,7 +174,9 @@ class FlechaInterprete():
             else:
                 return Constructor(valOp._values[0] and segRes._val)
         elif valOp._op in self.mapOperadores.keys():
-            if type(valOp._values[0]) is int and type(segRes) is int and valOp._op not in self.listOpLogicos:
+            if type(valOp._values[0]) is int and valOp._op == 'UMINUS':
+                return self.mapOperadores.get(valOp._op)(valOp._values[0])
+            elif type(valOp._values[0]) is int and type(segRes) is int and valOp._op not in self.listOpLogicos:
                 return self.mapOperadores.get(valOp._op)(valOp._values[0], segRes)
             else:
                 return Constructor(str(self.mapOperadores.get(valOp._op)(valOp._values[0], segRes)))            
