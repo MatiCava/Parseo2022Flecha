@@ -19,8 +19,11 @@ if __name__ == '__main__':
         tokenized = lexer.tokenize(data)
         parsed = parser.parse(tokenized)
         ast = parsed.toAST()
-        #print(ast)
-        inter = FlechaInterprete({}, EntornoVacio())
+        envGlobal = {
+            'OR': 'OR',
+            'AND': 'AND'
+        }
+        inter = FlechaInterprete(envGlobal, EntornoVacio())
         for rama in ast:
             inter.evaluar(rama)
         ##jsonResult = dumps(ast, indent=3)

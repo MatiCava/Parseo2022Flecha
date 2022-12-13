@@ -1,5 +1,6 @@
 import copy
 import json
+import operator
 import sys
 
 
@@ -21,6 +22,12 @@ class EntornoExtendido():
             return self._val
         else:
             return self._env.lookup(var)
+
+class ValueOperacion():
+    def __init__(self, operador):
+        self._op = operador
+        self._values = []
+        self._skip = False
 
 class Lista():
 
@@ -46,6 +53,12 @@ class FlechaInterprete():
         'closure' : Clausura,
     }
 
+    mapOperadores = {
+        #'ADD' : operator.add,
+        'OR' : 'or',
+        'AND': 'and'
+    }
+
     def __init__(self, envG, envL):
         self._envG = envG
         self._envL = envL
@@ -58,7 +71,7 @@ class FlechaInterprete():
             
     def evaluarExpr(self, ast):
         expr = ast[0]
-        print(ast)
+        #print(ast)
         #print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
@@ -100,6 +113,9 @@ class FlechaInterprete():
                 return res
         else:
             res1 = self.evaluarExpr(expr1)
+            if isinstance(res1, ValueOperacion) and res1._skip:
+                res = self.evaluarOp(res1, None)
+                return res
             res2 = self.evaluarExpr(expr2)
             if isinstance(res1, Clausura):
                 oldL = self._envL
@@ -113,6 +129,27 @@ class FlechaInterprete():
                 else:    
                     res1._list.append(res2)
                 return res1
+            if res1 in self.mapOperadores.keys():
+                valOp = ValueOperacion(res1)
+                valOp._values.append(res2._val)
+                if (res1 == 'OR' and res2._val == 'True') or (res1 == 'AND' and res2._val == 'False'):
+                    valOp._skip = True
+                return valOp
+            if isinstance(res1, ValueOperacion):
+                res = self.evaluarOp(res1, res2)
+                return res
+
+    def evaluarOp(self, valOp, segRes):
+        if valOp._op == 'OR':
+            if valOp._skip:
+                return Constructor(valOp._values[0])
+            else:
+                return Constructor(valOp._values[0] or segRes._val)
+        elif valOp._op == 'AND':
+            if valOp._skip:
+                return Constructor(valOp._values[0])
+            else:
+                return Constructor(valOp._values[0] and segRes._val)
 
     def evaluarCase(self, constr, branches):
         resConstr = self.evaluarExpr(constr)
@@ -136,7 +173,7 @@ class FlechaInterprete():
             if isinstance(resConstr, Lista) and 'Nil' in branch[1] and len(resConstr._list) == 0:
                 return self.evaluarExpr(branch[3])
 
-            if str.lower(branch[1]) in self.mapTypes.keys() and type(resConstr) is self.mapTypes[str.lower(branch[1])]: #revisar no hace falta ver que sea el mismo numero que la guarda?
+            if str.lower(branch[1]) in self.mapTypes.keys() and type(resConstr) is self.mapTypes[str.lower(branch[1])]:
                 return self.evaluarExpr(branch[3])
 
     def evaluarVar(self, expr):
