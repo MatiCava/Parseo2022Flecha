@@ -21,7 +21,9 @@ if __name__ == '__main__':
         ast = parsed.toAST()
         envGlobal = {
             'OR': 'OR',
-            'AND': 'AND'
+            'AND': 'AND',
+            'NOT': 'NOT',
+            'EQ': 'EQ'
         }
         inter = FlechaInterprete(envGlobal, EntornoVacio())
         for rama in ast:

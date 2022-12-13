@@ -56,7 +56,9 @@ class FlechaInterprete():
     mapOperadores = {
         #'ADD' : operator.add,
         'OR' : 'or',
-        'AND': 'and'
+        'AND': 'and',
+        'NOT': 'not',
+        'EQ': 'eq'
     }
 
     def __init__(self, envG, envL):
@@ -108,7 +110,6 @@ class FlechaInterprete():
             if 'unsafePrintChar' in expr1[1]:
                 res = self.evaluarExpr(expr2)
                 print('RESULT UNSAFE PRINT CHAR')
-                #sys.stdout.write(res)
                 print(res)
                 return res
         else:
@@ -131,16 +132,27 @@ class FlechaInterprete():
                 return res1
             if res1 in self.mapOperadores.keys():
                 valOp = ValueOperacion(res1)
-                valOp._values.append(res2._val)
-                if (res1 == 'OR' and res2._val == 'True') or (res1 == 'AND' and res2._val == 'False'):
+                if isinstance(res2, Constructor):
+                    valOp._values.append(res2._val)
+                else:
+                    valOp._values.append(res2)    
+                if (res1 == 'OR' and res2._val == 'True') or (res1 == 'AND' and res2._val == 'False') or (res1 == 'NOT'):
                     valOp._skip = True
-                return valOp
+                if res1 == 'NOT':
+                    return self.evaluarOp(valOp, None)
+                else:
+                    return valOp
             if isinstance(res1, ValueOperacion):
                 res = self.evaluarOp(res1, res2)
                 return res
 
     def evaluarOp(self, valOp, segRes):
-        if valOp._op == 'OR':
+        if valOp._op =='NOT':
+            if valOp._values[0] == 'True':
+                return Constructor('False')
+            else:
+                return Constructor('True')
+        elif valOp._op == 'OR':
             if valOp._skip:
                 return Constructor(valOp._values[0])
             else:
@@ -150,6 +162,8 @@ class FlechaInterprete():
                 return Constructor(valOp._values[0])
             else:
                 return Constructor(valOp._values[0] and segRes._val)
+        elif valOp._op == 'EQ':
+            return Constructor(str(valOp._values[0] == segRes))
 
     def evaluarCase(self, constr, branches):
         resConstr = self.evaluarExpr(constr)
