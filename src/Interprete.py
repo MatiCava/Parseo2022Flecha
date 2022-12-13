@@ -54,12 +54,22 @@ class FlechaInterprete():
     }
 
     mapOperadores = {
-        #'ADD' : operator.add,
         'OR' : 'or',
         'AND': 'and',
         'NOT': 'not',
-        'EQ': 'eq'
+        'EQ': operator.eq,
+        'NE': operator.ne,
+        'GE': operator.ge,
+        'LE': operator.le,
+        'GT': operator.gt,
+        'LT': operator.lt,
+        'ADD' : operator.add,
+        'SUB': operator.sub,
+        'MUL': operator.mul,
+        'DIV': operator.floordiv
     }
+
+    listOpLogicos = ['LT', 'LE', 'GT', 'GE', 'NE', 'EQ']
 
     def __init__(self, envG, envL):
         self._envG = envG
@@ -74,7 +84,6 @@ class FlechaInterprete():
     def evaluarExpr(self, ast):
         expr = ast[0]
         #print(ast)
-        #print(expr)
         if expr == 'Def':
             self._envG[ast[1]] = self.evaluarExpr(ast[2])
         elif expr == 'ExprApply':
@@ -162,8 +171,11 @@ class FlechaInterprete():
                 return Constructor(valOp._values[0])
             else:
                 return Constructor(valOp._values[0] and segRes._val)
-        elif valOp._op == 'EQ':
-            return Constructor(str(valOp._values[0] == segRes))
+        elif valOp._op in self.mapOperadores.keys():
+            if type(valOp._values[0]) is int and type(segRes) is int and valOp._op not in self.listOpLogicos:
+                return self.mapOperadores.get(valOp._op)(valOp._values[0], segRes)
+            else:
+                return Constructor(str(self.mapOperadores.get(valOp._op)(valOp._values[0], segRes)))            
 
     def evaluarCase(self, constr, branches):
         resConstr = self.evaluarExpr(constr)
@@ -183,10 +195,8 @@ class FlechaInterprete():
                 else:
                     resultCase = self.evaluarExpr(branch[3])
                 return resultCase
-
             if isinstance(resConstr, Lista) and 'Nil' in branch[1] and len(resConstr._list) == 0:
                 return self.evaluarExpr(branch[3])
-
             if str.lower(branch[1]) in self.mapTypes.keys() and type(resConstr) is self.mapTypes[str.lower(branch[1])]:
                 return self.evaluarExpr(branch[3])
 

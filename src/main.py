@@ -23,7 +23,16 @@ if __name__ == '__main__':
             'OR': 'OR',
             'AND': 'AND',
             'NOT': 'NOT',
-            'EQ': 'EQ'
+            'EQ': 'EQ',
+            'NE': 'NE',
+            'GE': 'GE',
+            'LE': 'LE',
+            'GT': 'GT',
+            'LT': 'LT',
+            'ADD': 'ADD',
+            'SUB': 'SUB',
+            'MUL': 'MUL',
+            'DIV': 'DIV'
         }
         inter = FlechaInterprete(envGlobal, EntornoVacio())
         for rama in ast:
